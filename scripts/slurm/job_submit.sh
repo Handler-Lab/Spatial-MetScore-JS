@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=12
-#SBATCH --mem=64G
+#SBATCH --mem=48G
 #SBATCH --time=72:00:00
 #SBATCH --partition=c128-m1024
 
@@ -22,9 +22,9 @@ echo "Starting Spatial MetScore Analysis..."
 
 conda init bash > /dev/null 2>&1
 source ~/.bashrc
-conda activate Spatial
+conda activate spatial_R_scratch
 
 # Run the Python script
-python /scratch/rprest2/Spatial-MetScore/scripts/00_download_references.py
+Rscript /scratch/rprest2/Spatial-MetScore/scripts/copykat_pt1a.R
 
 echo "Spatial MetScore Analysis complete."
