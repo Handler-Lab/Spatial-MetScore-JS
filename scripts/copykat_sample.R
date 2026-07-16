@@ -16,13 +16,12 @@ if (length(args) < 1) stop("Usage: copykat_sample.R <SAMPLE_ID>")
 SAMPLE <- args[1]
 
 DATA_ROOT <- "/group/jshandl-g00/Spatial-MetScore/Spatial-MetScore/data/raw/Samples"
-PROC_ROOT <- "/group/jshandl-g00/Spatial-MetScore/Spatial-MetScore/data/processed/copykat"
+PROC_ROOT <- "/group/jshandl-g00/Spatial-MetScore/Spatial-MetScore/data/processed/copykat_pearson"
 DATA_DIR  <- file.path(DATA_ROOT, SAMPLE)
-FIG_DIR   <- file.path("figures/copykat", SAMPLE)   # relative to repo root
+FIG_DIR   <- file.path("figures/copykat_pearson", SAMPLE)   # relative to repo root
 DATA_OUT  <- file.path(PROC_ROOT, SAMPLE)
 WORK      <- file.path(tempdir(), paste0("copykat_", SAMPLE))
 for (d in c(FIG_DIR, DATA_OUT, WORK)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
-N_CORES <- as.integer(Sys.getenv("SLURM_CPUS_PER_TASK", "8"))
 
 # ---- 1. Load + QC (match BANKSY / metscore pipeline: min_counts >= 100) ----
 seu <- Load10X_Spatial(data.dir = DATA_DIR, filename = "filtered_feature_bc_matrix.h5")
@@ -38,7 +37,7 @@ ck <- tryCatch(
   copykat(rawmat = raw, id.type = "S", sam.name = SAMPLE,
           ngene.chr = 5, win.size = 25, KS.cut = 0.1,
           distance = "euclidean", genome = "hg20",
-          n.cores = N_CORES, plot.genes = "TRUE", output.seg = "FALSE"),
+          n.cores = 8, plot.genes = "TRUE", output.seg = "FALSE"),
   error = function(e) { message(sprintf("[%s] CopyKAT ERROR: %s", SAMPLE, conditionMessage(e))); NULL }
 )
 setwd(oldwd)
@@ -73,7 +72,14 @@ tryCatch({
 }, error = function(e) message(sprintf("[%s] spatial plot failed: %s", SAMPLE, conditionMessage(e))))
 
 # ---- 4. One-line per-sample summary ----
-tb <- table(factor(pred$copykat.pred, levels = c("aneuploid", "diploid", "not.defined")))
+# CopyKAT sometimes falls back to low-confidence cluster labels
+# (e.g. "c1:diploid:low.conf", "c2:aneuploid:low.conf") instead of the
+# plain "aneuploid"/"diploid" strings -- classify robustly by substring
+# rather than exact match so these aren't silently dropped as NA.
+call_class <- ifelse(grepl("aneuploid", pred$copykat.pred), "aneuploid",
+              ifelse(grepl("diploid", pred$copykat.pred), "diploid",
+                     "not.defined"))
+tb <- table(factor(call_class, levels = c("aneuploid", "diploid", "not.defined")))
 summ <- data.frame(sample = SAMPLE, n_spots_postQC = n_postqc, n_classified = nrow(pred),
                    n_aneuploid = as.integer(tb["aneuploid"]),
                    n_diploid   = as.integer(tb["diploid"]),
