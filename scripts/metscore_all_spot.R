@@ -1,3 +1,10 @@
+suppressPackageStartupMessages({
+  library(Matrix)
+  library(singscore)
+  library(tidyverse)
+  library(data.table)
+})
+
 # Loading the data
 data_dir <- "/group/jshandl-g00/Spatial-MetScore/Spatial-MetScore/data/processed"
 

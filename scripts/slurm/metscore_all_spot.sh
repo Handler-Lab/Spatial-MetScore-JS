@@ -25,7 +25,7 @@ cd /scratch/hhuan40/Spatial-MetScore-JS
 
 # Load conda and activate the designated environment
 source /opt/anaconda/etc/profile.d/conda.sh
-conda activate /group/jshandl-g00/spatial_R_scratch
+conda activate  /scratch/hhuan40/conda_envs/spatial_R_scratch
 
 echo "=== Starting MetScore Calculation ==="
 echo "Node: $(hostname)"
