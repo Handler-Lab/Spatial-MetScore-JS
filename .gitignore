@@ -1,6 +1,5 @@
 data/
 output/
-figures/
 *.env
 .conda/
 __pycache__/
