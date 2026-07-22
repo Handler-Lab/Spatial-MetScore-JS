@@ -147,6 +147,13 @@ sub <- RunHarmony(sub, group.by.vars="atlas", verbose=FALSE)
 tt("UMAP harmony (post)")
 sub <- RunUMAP(sub, dims=1:30, reduction="harmony", reduction.name="umap_post", verbose=FALSE)
 
+# CHECKPOINT: all expensive compute (merge/PCA/2xUMAP/Harmony) is done -- persist
+# now so a downstream plotting failure never forces a full recompute.
+tt("checkpoint: saveRDS computed object before plotting")
+dir.create(FIG, recursive=TRUE, showWarnings=TRUE)
+saveRDS(sub, "/scratch/rprest2/composite_ref_qc_merged.rds")
+tt("  checkpoint written")
+
 pal_atlas <- setNames(brewer.pal(4,"Set1"), sort(unique(sub$atlas)))
 ncoarse <- length(unique(sub$coarse))
 pal_coarse <- setNames(colorRampPalette(brewer.pal(12,"Paired"))(ncoarse), sort(unique(sub$coarse)))
@@ -157,7 +164,7 @@ mkumap <- function(red, grp, pal, ttl){
     ggtitle(ttl) + theme(legend.position="right")
 }
 save_png <- function(p, name, w=8, h=6){
-  ggsave(file.path(FIG,name), p, width=w, height=h, dpi=300, bg="white")
+  ggsave(file.path(FIG,name), p, width=w, height=h, dpi=300, bg="white", create.dir=TRUE)
   tt(paste("wrote", name))
 }
 save_png(mkumap("umap_pre","atlas", pal_atlas,"Pre-integration (merged, uncorrected) - by reference"),  "umap_pre_by_atlas.png")
