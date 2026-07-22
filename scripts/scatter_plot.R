@@ -20,7 +20,7 @@ label_purity <- sprintf("Pearson R = %.3f | R-squared = %.3f", cor_purity, cor_p
 # ==========================================
 # 3. 准备画图并直接保存为上下排列的 PNG
 # ==========================================
-png(filename = "/scratch/hhuan40/Spatial-MetScore-JS/nmf/scatter_plots.png", 
+png(filename = "/group/jshandl-g00/Spatial-MetScore/figures/scatter_plots.png", 
     width = 12, height = 10, units = "in", res = 300, type = "cairo")
 
 # 图1: x 为 Reads
